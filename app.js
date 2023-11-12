@@ -54,8 +54,8 @@ async function getData() {
     const tooltip = d3.select(".plot")
         .append("g")
             .attr("id", "tooltip")
-            .attr("data-date", "")
-            .attr("data-data", 0)
+            .attr("data-year", "")
+            .attr("data-xvalue", 0)
             .style("left", "0px")
             .style("visibility", "hidden");
     
@@ -88,10 +88,10 @@ async function getData() {
     // Sets tooltip text and changes location
     const mousemove = function(data) {
         tooltip.attr("data-year", data[0]);
-        tooltip.attr("data-xvalue", data[1]);
+        tooltip.attr("data-time", data[1]);
         const text = d3.select('.tooltip-text');
         //text.html(`Year: ${tooltip.attr("data-year")}Time: ${tooltip.attr("data-xvalue").substring(19,24)}`);
-        text.html(`Name: ${data[2]}<br/>Year: ${tooltip.attr("data-year")}, Time: ${tooltip.attr("data-xvalue").substring(19,24)}
+        text.html(`Name: ${data[2]}<br/>Year: ${tooltip.attr("data-year")}, Time: ${tooltip.attr("data-time").substring(19,24)}
         ${(data[3] != '' ? "<br/><br/>Allegation: " + data[3] : '')}`);
         const [x, y] = d3.mouse(this);
         tooltip.style("left", `${x+90}px`)
@@ -152,15 +152,15 @@ async function getData() {
             .attr("cx", d => x(new Date(d[0],0)))
             .attr("cy", d => y(d[1]))
             .attr("r", 5)
-            .attr("data-year", d => d[0])
-            .attr("data-xvalue", d => d[1])
-            .attr("class", "bar")
+            .attr("data-xvalue", d => d[0])
+            .attr("data-yvalue", d => d[1])
+            .attr("class", "dot")
             .attr("fill", initializeColor)
             .on("mouseover", mouseover)
             .on("mouseout", mouseout)
             .on("mousemove", mousemove)
 
-    // Create and append legend information
+    // Create and append legend
     const legend = svg.append("g")
         .attr("id", "legend")
         .attr("transform", "translate(500,150)");
