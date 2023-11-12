@@ -27,20 +27,27 @@ async function getData() {
     let yAxisTitle = "Minutes";
     datasetTime = dataset.map(d => d.Time);
     datasetYear = dataset.map(d => d.Year);
+    const datasetCombined = dataset.map(data => {
+        let d = new Date;
+        d.setMinutes(data.Time.substring(0,2));
+        d.setSeconds(data.Time.substring(3,5));
+        return [data.Year,d,data.Name,data.Doping];
+    });
+    //console.log(dCombined[0])
     var timeFormat = d3.timeFormat('%M:%S');
     
     let barw = w / dataset.length;
 
-    datasetCombined = [];
-    for (let i = 0; i < datasetTime.length; i++) {
-        let d = new Date;
-        d.setMinutes(datasetTime[i].substring(0,2));
-        d.setSeconds(datasetTime[i].substring(3,5));
-        //console.log(d.toISOString().substring(14, 19))
-        datasetCombined[i] = [datasetYear[i], d];//new Date(null, null, null, null,datasetTime[i].substring(0,2),datasetTime[i].substring(3,5))];
-    }
+    // datasetCombined = [];
+    // for (let i = 0; i < datasetTime.length; i++) {
+    //     let d = new Date;
+    //     d.setMinutes(datasetTime[i].substring(0,2));
+    //     d.setSeconds(datasetTime[i].substring(3,5));
+    //     //console.log(d.toISOString().substring(14, 19))
+    //     datasetCombined[i] = [datasetYear[i], d];
+    // }
     //let d = new Date(null, null, null, null, datasetCombined[1][1].substring(0,2), datasetCombined[0][1].substring(3,5));
-    console.log(d3.min(datasetCombined, (d) => d[0]));
+    //console.log(dataset);
     //console.log(datasetCombined);
     
     // Tooltip
@@ -52,13 +59,22 @@ async function getData() {
             .style("left", "0px")
             .style("visibility", "hidden");
     
-    tooltip.append("text")
+    tooltip.append("div")
             .attr("class", "tooltip-text")
             .text("hidden");
     
+    // Set color for data points based on data present
+    const initializeColor = function(data) {
+        if (data[3] != '') {
+            return "aliceblue";
+        } else {
+            return "rgb(100,200,100)"
+        }
+    }
+
     // Function called when moving mouse out of bar 
-    const mouseout = function() {
-        d3.select(this).style("fill", "aliceblue");
+    const mouseout = function(data) {
+        d3.select(this).style("fill", initializeColor(data));
         tooltip.style("visibility", "hidden");
     } 
 
@@ -74,10 +90,11 @@ async function getData() {
         tooltip.attr("data-year", data[0]);
         tooltip.attr("data-xvalue", data[1]);
         const text = d3.select('.tooltip-text');
-        text.text(`Year: ${tooltip.attr("data-year")}, Time: ${tooltip.attr("data-xvalue").substring(19,24)}`);
+        //text.html(`Year: ${tooltip.attr("data-year")}Time: ${tooltip.attr("data-xvalue").substring(19,24)}`);
+        text.html(`Name: ${data[2]}<br/>Year: ${tooltip.attr("data-year")}, Time: ${tooltip.attr("data-xvalue").substring(19,24)}
+        ${(data[3] != '' ? "<br/><br/>Allegation: " + data[3] : '')}`);
         const [x, y] = d3.mouse(this);
-        tooltip.style("left", `${x-10}px`)
-            //.style("bottom", "20px")
+        tooltip.style("left", `${x+90}px`)
             .style("top", `${y-510}px`)
     };
 
@@ -138,9 +155,35 @@ async function getData() {
             .attr("data-year", d => d[0])
             .attr("data-xvalue", d => d[1])
             .attr("class", "bar")
-            .attr("fill", "aliceblue")
+            .attr("fill", initializeColor)
             .on("mouseover", mouseover)
             .on("mouseout", mouseout)
             .on("mousemove", mousemove)
+
+    // Create and append legend information
+    const legend = svg.append("g")
+        .attr("id", "legend")
+        .attr("transform", "translate(500,150)");
+    
+    legend.append("text")
+        .text("Has allegations");
+
+    legend.append("rect")
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("x", "85")
+        .attr("y", "-13")
+        .style("fill", "aliceblue");
+    
+    legend.append("text")
+        .attr("y", "20")
+        .text("No allegations");
+
+    legend.append("rect")
+        .attr("width", 15)
+        .attr("height", 15)
+        .attr("x", "85")
+        .attr("y", "8")
+        .style("fill", "rgb(100,200,100");
             
 })();
